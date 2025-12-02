@@ -22,6 +22,10 @@ const App = () => {
           key={index}
           src={image.src}
           alt={image.alt}
+          style={{
+            width: "100px",
+            height: "100px",
+          }}
           className="asset-image"
         />
       ))}
