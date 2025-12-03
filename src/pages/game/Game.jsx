@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import s from "./game.module.scss";
 import rockImg from "../../assets/rock.png";
 import paperImg from "../../assets/paper.png";
@@ -8,6 +8,9 @@ import spockImg from "../../assets/spock.png";
 
 const Game = () => {
   const canvasRef = useRef(null);
+  const startAnimationRef = useRef(null);
+  const startedRef = useRef(false);
+  const [started, setStarted] = useState(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -68,7 +71,7 @@ const Game = () => {
 
     resizeCanvasToDisplaySize();
 
-    // Load all entity images, then start the animation
+    // Load all entity images, then prepare the animation
     let loadedCount = 0;
     const totalToLoad = entities.length;
 
@@ -112,6 +115,17 @@ const Game = () => {
       // Ensure canvas size is correct before placing entities
       resizeCanvasToDisplaySize();
       randomizeEntities();
+
+      // Draw initial static frame
+      const width = canvas.clientWidth;
+      const height = canvas.clientHeight;
+      ctx.clearRect(0, 0, width, height);
+      entities.forEach((entity) => {
+        const { x, y, img } = entity;
+        if (img) {
+          ctx.drawImage(img, x, y, ENTITY_SIZE, ENTITY_SIZE);
+        }
+      });
 
       const animate = () => {
         resizeCanvasToDisplaySize();
@@ -199,7 +213,12 @@ const Game = () => {
         animationFrameId = requestAnimationFrame(animate);
       };
 
-      animate();
+      // Expose a function to start the animation when the user clicks "Start"
+      startAnimationRef.current = () => {
+        if (!animationFrameId) {
+          animate();
+        }
+      };
     };
 
     entities.forEach((entity) => {
@@ -219,10 +238,29 @@ const Game = () => {
     };
   }, []);
 
+  const handleStart = () => {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    setStarted(true);
+    if (startAnimationRef.current) {
+      startAnimationRef.current();
+    }
+  };
+
   return (
-    <canvas className={s.canvas} ref={canvasRef}>
-      Your browser does not support the canvas element.
-    </canvas>
+    <div className={s.wrapper}>
+      <canvas className={s.canvas} ref={canvasRef}>
+        Your browser does not support the canvas element.
+      </canvas>
+      <button
+        type="button"
+        className={s.startButton}
+        onClick={handleStart}
+        disabled={started}
+      >
+        {started ? "Running..." : "Start"}
+      </button>
+    </div>
   );
 };
 
