@@ -37,6 +37,7 @@ const Game = () => {
   const winnerFoundRef = useRef(false);
   const [started, setStarted] = useState(false);
   const [winner, setWinner] = useState(null);
+  const [resetToken, setResetToken] = useState(0);
   const confettiConfig = useMemo(() => createConfettiConfig(), []);
 
   useEffect(() => {
@@ -274,7 +275,7 @@ const Game = () => {
         cancelAnimationFrame(animationFrameId);
       }
     };
-  }, []);
+  }, [resetToken]);
 
   const handleStart = () => {
     if (startedRef.current) return;
@@ -283,6 +284,24 @@ const Game = () => {
     if (startAnimationRef.current) {
       startAnimationRef.current();
     }
+  };
+
+  const handleReset = () => {
+    // Clear canvas
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    }
+
+    // Reset state and refs
+    startedRef.current = false;
+    winnerFoundRef.current = false;
+    setStarted(false);
+    setWinner(null);
+    setResetToken((prev) => prev + 1);
   };
 
   return (
@@ -318,6 +337,9 @@ const Game = () => {
               />
             ))}
           </div>
+          <button type="button" className={s.resetButton} onClick={handleReset}>
+            Clear &amp; Restart
+          </button>
         </div>
       )}
     </div>
