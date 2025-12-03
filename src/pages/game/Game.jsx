@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import s from "./game.module.scss";
 import rockImg from "../../assets/rock.png";
 import paperImg from "../../assets/paper.png";
@@ -6,11 +6,38 @@ import scissorsImg from "../../assets/scissors.png";
 import lizardImg from "../../assets/lizard.png";
 import spockImg from "../../assets/spock.png";
 
+const CONFETTI_COUNT = 320;
+
+const createConfettiConfig = () =>
+  Array.from({ length: CONFETTI_COUNT }).map(() => {
+    const left = Math.random() * 100;
+    const delay = Math.random() * 2.5;
+    const duration = 2 + Math.random() * 2.5;
+    const scale = 0.7 + Math.random() * 0.9;
+    const drift = (Math.random() - 0.5) * 100; // px left/right over the fall
+    const rotation = 180 + Math.random() * 540; // degrees (different spin per piece)
+    const colors = ["#ffcc00", "#ff4b81", "#4bc0ff", "#8cff4b", "#ffffff"];
+    const color = colors[Math.floor(Math.random() * colors.length)];
+
+    return {
+      left,
+      delay,
+      duration,
+      scale,
+      color,
+      drift,
+      rotation,
+    };
+  });
+
 const Game = () => {
   const canvasRef = useRef(null);
   const startAnimationRef = useRef(null);
   const startedRef = useRef(false);
+  const winnerFoundRef = useRef(false);
   const [started, setStarted] = useState(false);
+  const [winner, setWinner] = useState(null);
+  const confettiConfig = useMemo(() => createConfettiConfig(), []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -210,6 +237,17 @@ const Game = () => {
           }
         });
 
+        // If only one type remains, declare winner and stop animation
+        const uniqueNames = new Set(entities.map((e) => e.name));
+        if (uniqueNames.size === 1 && !winnerFoundRef.current) {
+          winnerFoundRef.current = true;
+          const [onlyName] = uniqueNames;
+          if (onlyName) {
+            setWinner(onlyName);
+          }
+          return; // stop scheduling new frames
+        }
+
         animationFrameId = requestAnimationFrame(animate);
       };
 
@@ -260,6 +298,28 @@ const Game = () => {
       >
         {started ? "Running..." : "Start"}
       </button>
+      {winner && (
+        <div className={s.winnerOverlay}>
+          <div className={s.winnerText}>{winner.toUpperCase()} WINS!</div>
+          <div className={s.confettiContainer}>
+            {confettiConfig.map((piece, index) => (
+              <span
+                key={index}
+                className={s.confettiPiece}
+                style={{
+                  left: `${piece.left}%`,
+                  animationDelay: `${piece.delay}s`,
+                  animationDuration: `${piece.duration}s`,
+                  transform: `scale(${piece.scale})`,
+                  backgroundColor: piece.color,
+                  "--confetti-drift": `${piece.drift}px`,
+                  "--confetti-rotation": `${piece.rotation}deg`,
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
