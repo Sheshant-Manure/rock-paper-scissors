@@ -1,10 +1,11 @@
-# rock-paper-scissors-lizard-spock
+# Rock–Paper–Scissors–Lizard–Spock
 
-A zero-player simulation of Rock-Paper-Scissors-Lizard-Spock where multiple items roam a 2D space with random motion. On collision, they follow the classic rules and the losing item converts into the winner. The system evolves until only one type remains.
+A zero-player simulation of Rock–Paper–Scissors–Lizard–Spock, where multiple entities roam a 2D space with random motion.  
+When two entities collide, the outcome is determined by the classic RPSLS rules, and the losing entity transforms into the winner’s type.
+
+Live demo: https://rock-paper-scissors-lizard-spock.fun
 
 ## Rules
-
-Here are the complete rules for Rock–Paper–Scissors–Lizard–Spock:
 
 - Rock crushes Scissors
 - Rock crushes Lizard
@@ -17,13 +18,18 @@ Here are the complete rules for Rock–Paper–Scissors–Lizard–Spock:
 - Spock smashes Scissors
 - Spock vaporizes Rock
 
-References
+## Tech Stack
 
-Flaticon
+- HTML
+- CSS
+- JavaScript
+- React
+
+## Credits
+
+### Icons
+
+The symbols for Rock, Paper, Scissors, Lizard, and Spock are sourced from Flaticon:  
 https://www.flaticon.com
 
-The 5 symbols used here to represent the rock, paper, scissors, lizard and spock were taken from the Flaticon's website.
-
-Freepik
-The game's background image was set from the Freepik's website. Here's the direct link to download it:
-https://www.freepik.com/free-psd/gradient-abstract-borders_49681453.htm#from_element=cross_selling__psd
+Icons are used under their respective licenses.
