@@ -42,6 +42,14 @@ const Game = () => {
   const [started, setStarted] = useState(false);
   const [winner, setWinner] = useState(null);
   const [resetToken, setResetToken] = useState(0);
+  // counts per entity type controlled by the sliders
+  const [counts, setCounts] = useState({
+    rock: 1,
+    paper: 1,
+    scissors: 1,
+    lizard: 1,
+    spock: 1,
+  });
   const confettiConfig = useMemo(() => createConfettiConfig(), []);
 
   useEffect(() => {
@@ -67,7 +75,9 @@ const Game = () => {
       const result = [];
 
       baseTypes.forEach((type) => {
-        for (let i = 0; i < 10; i += 1) {
+        // use slider-controlled counts (default to 1)
+        const typeCount = Math.max(1, Math.min(100, counts[type.name] || 1));
+        for (let i = 0; i < typeCount; i += 1) {
           result.push({
             name: type.name,
             src: type.src,
@@ -507,7 +517,28 @@ const Game = () => {
       canvas.removeEventListener("touchend", handlePointerUp);
       canvas.removeEventListener("touchcancel", handlePointerLeave);
     };
-  }, [resetToken]);
+  }, [resetToken, counts]);
+
+  // Handler for slider changes; prevent changing while simulation is running
+  const handleCountChange = (type) => (e) => {
+    const value = Number(e.target.value || 1);
+    // clamp
+    const clamped = Math.max(1, Math.min(100, Math.floor(value)));
+    setCounts((prev) => ({ ...prev, [type]: clamped }));
+  };
+
+  // Handler for the "All" slider which sets every type to the same value
+  const handleAllChange = (e) => {
+    const value = Number(e.target.value || 1);
+    const clamped = Math.max(1, Math.min(100, Math.floor(value)));
+    setCounts((prev) => {
+      const next = {};
+      Object.keys(prev).forEach((k) => {
+        next[k] = clamped;
+      });
+      return next;
+    });
+  };
 
   const handleStart = () => {
     if (startedRef.current) return;
@@ -593,6 +624,56 @@ const Game = () => {
 
   return (
     <div className={s.wrapper}>
+      <div className={s.controls}>
+        <div className={s.controlItem} key="all">
+          <div className={s.controlLabel}>All</div>
+          <input
+            className={s.range}
+            type="range"
+            min={1}
+            max={100}
+            value={Math.max(
+              1,
+              Math.min(
+                100,
+                Math.round(
+                  Object.values(counts).reduce((a, b) => a + b, 0) /
+                    Object.keys(counts).length
+                )
+              )
+            )}
+            onChange={handleAllChange}
+            disabled={started}
+          />
+          <div className={s.countDisplay}>
+            {Math.round(
+              Object.values(counts).reduce((a, b) => a + b, 0) /
+                Object.keys(counts).length
+            )}
+          </div>
+        </div>
+        {[
+          { key: "rock", label: "Rock" },
+          { key: "paper", label: "Paper" },
+          { key: "scissors", label: "Scissors" },
+          { key: "lizard", label: "Lizard" },
+          { key: "spock", label: "Spock" },
+        ].map((item) => (
+          <div className={s.controlItem} key={item.key}>
+            <div className={s.controlLabel}>{item.label}</div>
+            <input
+              className={s.range}
+              type="range"
+              min={1}
+              max={100}
+              value={counts[item.key]}
+              onChange={handleCountChange(item.key)}
+              disabled={started}
+            />
+            <div className={s.countDisplay}>{counts[item.key]}</div>
+          </div>
+        ))}
+      </div>
       <canvas className={s.canvas} ref={canvasRef}>
         Your browser does not support the canvas element.
       </canvas>
